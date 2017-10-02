@@ -1,0 +1,3 @@
+defmodule NetworkNode do
+    
+end
