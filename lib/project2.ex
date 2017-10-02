@@ -26,7 +26,7 @@ defmodule Project2 do
 
     numNodes=elem(args_tup,0)
     topology=elem(args_tup,1)
-    algorithm=elem(args_tup,2)    
+    algorithm=elem(args_tup,2)
     # Enum.each(args,fn op -> (
     #   IO.puts op
     # ) end)
@@ -37,6 +37,36 @@ defmodule Project2 do
     IO.puts "algorithm:" <> algorithm
 
     #start the main stuff here...
+
+    cond do
+      topology == "Fully Connected" ->
+        if algorithm == "gossip" do
+        end
+        if algorithm == "push-sum" do
+          
+        end
+      topology == "2DGrid" ->
+        if algorithm == "gossip" do
+          
+        end
+        if algorithm == "push-sum" do
+          
+        end
+      topology == "Line" ->
+        if algorithm == "gossip" do
+          
+        end
+        if algorithm == "push-sum" do
+          
+        end
+      topology == "Imperfect Grid" ->
+        if algorithm == "gossip" do
+          
+        end
+        if algorithm == "push-sum" do
+          
+        end
+    end
 
   end
 end
