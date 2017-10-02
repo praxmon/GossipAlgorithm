@@ -40,32 +40,17 @@ defmodule Project2 do
 
     cond do
       topology == "Fully Connected" ->
-        if algorithm == "gossip" do
-        end
-        if algorithm == "push-sum" do
-          
-        end
+        NetworkManager.start_link([])
+        NetworkManager.initFull(numNodes, algorithm)
       topology == "2DGrid" ->
-        if algorithm == "gossip" do
-          
-        end
-        if algorithm == "push-sum" do
-          
-        end
+        NetworkManager.start_link([])
+        NetworkManager.init2D(numNodes, algorithm)
       topology == "Line" ->
-        if algorithm == "gossip" do
-          
-        end
-        if algorithm == "push-sum" do
-          
-        end
+        NetworkManager.start_link([])
+        NetworkManager.initLine(numNodes, algorithm)
       topology == "Imperfect Grid" ->
-        if algorithm == "gossip" do
-          
-        end
-        if algorithm == "push-sum" do
-          
-        end
+        NetworkManager.start_link([])
+        NetworkManager.initImperfectGrid(numNodes, algorithm)
     end
 
   end

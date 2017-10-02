@@ -1,4 +1,4 @@
-defmodule MainServer do
+defmodule NetworkManager do
     use GenServer
 
     def start_link(opts) do
