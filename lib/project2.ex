@@ -32,41 +32,32 @@ defmodule Project2 do
     # ) end)
 
 
+
     IO.puts "numNodes:" <> numNodes
     IO.puts "topology:" <> topology
     IO.puts "algorithm:" <> algorithm
 
     #start the main stuff here...
+    #note: important to convert this to integer...
+    numNodes=String.to_integer(numNodes)
+    #TODO: make network manager global so that nodes can report back for convergence....
 
     cond do
-      topology == "Fully Connected" ->
-        if algorithm == "gossip" do
-        end
-        if algorithm == "push-sum" do
-          
-        end
-      topology == "2DGrid" ->
-        if algorithm == "gossip" do
-          
-        end
-        if algorithm == "push-sum" do
-          
-        end
-      topology == "Line" ->
-        if algorithm == "gossip" do
-          
-        end
-        if algorithm == "push-sum" do
-          
-        end
-      topology == "Imperfect Grid" ->
-        if algorithm == "gossip" do
-          
-        end
-        if algorithm == "push-sum" do
-          
-        end
+      topology == "full" ->
+        IO.puts "To implement"
+      topology == "2D" ->
+        IO.puts "To implement"
+      topology == "line" ->
+        NetworkManager.initLine(numNodes,algorithm)
+      topology == "imp2D" ->
+        IO.puts "To implement"
     end
 
+    IO.puts "Should reach here"
+    endlesswait()
+  end
+
+  def endlesswait do
+    endlesswait()
   end
 end
