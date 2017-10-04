@@ -32,10 +32,6 @@ defmodule NetworkManager do
     #     #
     # end
 
-    # def init2D(numnodes, algorithm) do 
-
-    # end
-
     def initLine(numnodes,algorithm) do
         {:ok,nwmngr_pid} = start_link(:oned,[])
         node_list=spawn_nodes(numnodes,algorithm)
@@ -97,7 +93,7 @@ defmodule NetworkManager do
         outmap
     end
 
-    def init2D(numnodes, algorithm) do
+    def init2D(numnodes, algorithm, imperfect) do
         {:ok,nwmngr_pid} = start_link(:oned,[])
         node_map = spawn_nodes_2d(numnodes, algorithm)
         IO.inspect node_map
@@ -133,7 +129,15 @@ defmodule NetworkManager do
                                 [node_map[r-1][c]] ++ [node_map[r+1][c]] ++ [node_map[r][c-1]] ++ [node_map[r][c+1]]
                         end
                 end
-                NetworkNode.populateNeighbours(cur_pid, neighbor_list)
+                if(imperfect) do
+                    range = 1..round(n)
+                    r = Enum.random(range)
+                    c = Enum.random(range)
+                    NetworkNode.populateNeighbours(cur_pid, neighbor_list ++ [node_map[r][c]])
+                end
+                if (imperfect == false) do
+                    NetworkNode.populateNeighbours(cur_pid, neighbor_list)
+                end
             )end)
         )end)
     end
