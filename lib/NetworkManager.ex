@@ -4,7 +4,6 @@ defmodule NetworkManager do
 
     #based on the algorithm the initialization for spawning the network nodes changes
     def spawn_nodes(numnodes,algorithm) do
-
         node_list=cond do
             algorithm == "gossip" ->
                 node_list= Enum.map(1..numnodes, fn(_) ->(
@@ -78,6 +77,66 @@ defmodule NetworkManager do
     
     end
 
+    def spawn_nodes_2d(numnodes, algorithm) do
+        numCols = :math.ceil(:math.sqrt(numnodes))
+        numRows = :math.ceil(:math.sqrt(numnodes))
+        range = 1..round(numRows)
+        outmap = Enum.reduce(range, %{}, fn(y, accout) -> (
+            inmap = Enum.reduce(range, %{}, fn(x, accin) -> (
+                if algorithm == "push-sum" do
+                    
+                end
+                if algorithm == "gossip" do
+                    {:ok, pid} = NetworkNode.start({:gossip, 0}, [])
+                    Map.put(accin, x, pid)
+                end
+            )end)
+            Map.put(accout, y, inmap)
+        )end)
+        # IO.inspect outmap
+        outmap
+    end
+
+    def init2D(numnodes, algorithm) do
+        {:ok,nwmngr_pid} = start_link(:oned,[])
+        node_map = spawn_nodes_2d(numnodes, algorithm)
+        IO.inspect node_map
+        n = :math.ceil(:math.sqrt(numnodes))
+        Enum.each(node_map, fn({r,row_map}) -> (
+            Enum.each(row_map, fn({c, cur_pid}) ->(
+                neighbor_list = cond do
+                    r == 1 ->
+                        cond do
+                            c==1 ->
+                                [node_map[r][c+1]] ++ [node_map[r+1][c]]
+                            c==n->
+                                [node_map[r+1][c]] ++ [node_map[r][c-1]]
+                            1<c && c<n ->
+                                [node_map[r][c-1]] ++ [node_map[r][c+1]] ++ [node_map[r+1][c]]
+                        end
+                    r == n ->
+                        cond do
+                            c == 1->
+                                [node_map[r-1][c]] ++ [node_map[r][c+1]]
+                            c == n ->
+                                [node_map[r-1][c]] ++ [node_map[r][c-1]]
+                            1<c && c<n ->
+                                [node_map[r][c-1]] ++ [node_map[r][c+1]] ++ [node_map[r-1][c]]
+                        end
+                    1<r && r<n ->
+                        cond do
+                            c==1 ->
+                                [node_map[r-1][c]] ++ [node_map[r+1][c]] ++ [node_map[r][c+1]]
+                            c==n ->
+                                [node_map[r-1][c]] ++ [node_map[r+1][c]] ++ [node_map[r][c-1]]
+                            1<c && c<n ->
+                                [node_map[r-1][c]] ++ [node_map[r+1][c]] ++ [node_map[r][c-1]] ++ [node_map[r][c+1]]
+                        end
+                end
+                NetworkNode.populateNeighbours(cur_pid, neighbor_list)
+            )end)
+        )end)
+    end
 
     def start_link(init_ops,opts) do
         #parse arguments if necessary

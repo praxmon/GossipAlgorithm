@@ -28,7 +28,7 @@ defmodule NetworkNode do
 
     def populateNeighbours(pid, list_neighbours) do
         #note:
-        #IO.inspect list_neighbours
+        IO.inspect {pid, list_neighbours}
         GenServer.cast(pid,{:add,list_neighbours})
     end
 
