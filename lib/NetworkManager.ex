@@ -201,7 +201,7 @@ defmodule NetworkManager do
             exit(:shutdown)
         end
         if(state_count/length < 0.9) do
-            IO.puts "Current convergence " <> Float.to_string ((state_count/length) *100) <>"%"
+            IO.puts "Current convergence " <> Float.to_string((state_count/length) *100) <>"%"
         end
         {:noreply, {state_node_list, state_count, length}}
     end
