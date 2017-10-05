@@ -9,12 +9,11 @@ defmodule GossipAlgorithms do
             #IO.inspect neighbour_list
             #IO.puts "Inside gossip"
             #TODO: consider doing a spawn enum maybe? might be a bit too heavy for full network...
-            Enum.each(neighbour_list, fn(neighbor) ->(
-                NetworkNode.sendRumour(neighbor)
-            )end)
+            random_pid = Enum.random(neighbour_list)
+            NetworkNode.sendRumour(random_pid)
             gossip(pid)
         else
-            IO.puts "Node has completed 10 transmissions..."
+            NetworkNode.informManager()
         end
     end
     

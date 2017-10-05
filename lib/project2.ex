@@ -44,13 +44,13 @@ defmodule Project2 do
 
     cond do
       topology == "full" ->
-        IO.puts "To implement"
+        NetworkManager.initFull(numNodes, algorithm)
       topology == "2D" ->
-        IO.puts "To implement"
+        NetworkManager.init2D(numNodes, algorithm, false)
       topology == "line" ->
         NetworkManager.initLine(numNodes,algorithm)
       topology == "imp2D" ->
-        IO.puts "To implement"
+        NetworkManager.init2D(numNodes, algorithm, true)
     end
 
     IO.puts "Should reach here"

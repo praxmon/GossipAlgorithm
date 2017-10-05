@@ -28,7 +28,7 @@ defmodule NetworkNode do
 
     def populateNeighbours(pid, list_neighbours) do
         #note:
-        IO.inspect {pid, list_neighbours}
+        # IO.inspect {pid, list_neighbours}
         GenServer.cast(pid,{:add,list_neighbours})
     end
 
@@ -86,6 +86,10 @@ defmodule NetworkNode do
     #call back to fetch the count
     def handle_call(:rumourcount,_from,{state_list_neighbours,state_count}) do
         {:reply,state_count,{state_list_neighbours,state_count}}
+    end
+
+    def informManager() do
+        GenServer.cast({:global, :daddy}, {:count})
     end
 
 end

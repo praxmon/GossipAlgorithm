@@ -1,7 +1,6 @@
 defmodule NetworkManager do
     use GenServer
 
-
     #based on the algorithm the initialization for spawning the network nodes changes
     def spawn_nodes(numnodes,algorithm) do
         node_list=cond do
@@ -25,23 +24,29 @@ defmodule NetworkManager do
 
 
     def initFull(numnodes, algorithm) do
-        {:ok,nwmngr_pid} = start_link(:oned,[])
+        {:ok,nwmngr_pid} = start_link({:oned, numnodes})
         node_list=spawn_nodes(numnodes,algorithm)
         node_tuple=List.to_tuple(node_list)
         n = length(node_list)
         Enum.each(node_list, fn(ele) -> (
             NetworkNode.populateNeighbours(ele, node_list)
         )end)
+        start_pid=Enum.random(node_list)
+        cond do
+            algorithm == "gossip" ->
+                NetworkNode.sendRumour(start_pid)
+                # IO.puts "Still working on this"
+                algorithm == "push-sum" ->
+                    IO.puts "Not implemented yet"
+        end
     end
 
     def initLine(numnodes,algorithm) do
-        {:ok,nwmngr_pid} = start_link(:oned,[])
+        {:ok,nwmngr_pid} = start_link({:oned, numnodes})
         node_list=spawn_nodes(numnodes,algorithm)
         node_tuple=List.to_tuple(node_list)
         n = length(node_list)
-
         #populated the neighbour list
-
         node_list
         |>Enum.with_index
         |>Enum.each(fn({cur_pid,i}) ->(
@@ -96,7 +101,7 @@ defmodule NetworkManager do
     end
 
     def init2D(numnodes, algorithm, imperfect) do
-        {:ok,nwmngr_pid} = start_link(:oned,[])
+        {:ok,nwmngr_pid} = start_link({:oned, numnodes})
         node_map = spawn_nodes_2d(numnodes, algorithm)
         # IO.inspect node_map
         n = :math.ceil(:math.sqrt(numnodes))
@@ -142,18 +147,31 @@ defmodule NetworkManager do
                 end
             )end)
         )end)
+        range = 1..round(n)
+        r = Enum.random(range)
+        c = Enum.random(range)
+        start_pid = node_map[r][c]
+        cond do
+            algorithm == "gossip" ->
+                NetworkNode.sendRumour(start_pid)
+                # IO.puts "Still working on this"
+                algorithm == "push-sum" ->
+                    IO.puts "Not implemented yet"
+        end
     end
 
-    def start_link(init_ops,opts) do
+    def start_link(init_ops) do
         #parse arguments if necessary
-        GenServer.start_link(__MODULE__,init_ops, opts)
+        GenServer.start_link(__MODULE__,init_ops, name: {:global, :daddy})
     end
 
 
     #for a 1D format
-    def init(:oned) do
-        state_tuple = {}
-        {:ok,state_tuple}
+    def init({:oned, numnodes}) do
+        state_node_list = %{}
+        state_count = 0
+        length = numnodes
+        {:ok,{state_node_list, state_count, length}}
     end
 
     # #TODO: figure this out for a 2D format...
@@ -174,4 +192,20 @@ defmodule NetworkManager do
         {:noreply, state_tuple}
         #handle cast if necessary
     end
+
+    def handle_cast({:count}, {state_node_list, state_count, length}) do
+        state_count = state_count + 1
+        if(state_count/length >= 0.9) do
+            IO.puts "Convergence of greater than 90%"
+            IO.puts "Initiating shutdown"
+            exit(:shutdown)
+        end
+        if(state_count/length < 0.9) do
+            IO.puts "Current convergence " <> Float.to_string ((state_count/length) *100) <>"%"
+        end
+        {:noreply, {state_node_list, state_count, length}}
+    end
+
+
+
 end
