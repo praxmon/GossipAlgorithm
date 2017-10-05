@@ -24,13 +24,15 @@ defmodule NetworkManager do
     end
 
 
-    # def initFull(numnodes, algorithm) do
-    #     #init list of complete network
-
-
-    #     # spawn all the children with own subset from the above list...
-    #     #
-    # end
+    def initFull(numnodes, algorithm) do
+        {:ok,nwmngr_pid} = start_link(:oned,[])
+        node_list=spawn_nodes(numnodes,algorithm)
+        node_tuple=List.to_tuple(node_list)
+        n = length(node_list)
+        Enum.each(node_list, fn(ele) -> (
+            NetworkNode.populateNeighbours(ele, node_list)
+        )end)
+    end
 
     def initLine(numnodes,algorithm) do
         {:ok,nwmngr_pid} = start_link(:oned,[])
@@ -96,7 +98,7 @@ defmodule NetworkManager do
     def init2D(numnodes, algorithm, imperfect) do
         {:ok,nwmngr_pid} = start_link(:oned,[])
         node_map = spawn_nodes_2d(numnodes, algorithm)
-        IO.inspect node_map
+        # IO.inspect node_map
         n = :math.ceil(:math.sqrt(numnodes))
         Enum.each(node_map, fn({r,row_map}) -> (
             Enum.each(row_map, fn({c, cur_pid}) ->(
