@@ -26,10 +26,9 @@ defmodule NetworkManager do
     def initFull(numnodes, algorithm) do
         {:ok,nwmngr_pid} = start_link({:oned, numnodes})
         node_list=spawn_nodes(numnodes,algorithm)
-        node_tuple=List.to_tuple(node_list)
-        n = length(node_list)
+
         Enum.each(node_list, fn(ele) -> (
-            NetworkNode.populateNeighbours(ele, node_list)
+            NetworkNode.populateNeighbours(ele, node_list,algorithm)
         )end)
         start_pid=Enum.random(node_list)
         cond do
@@ -37,7 +36,7 @@ defmodule NetworkManager do
                 NetworkNode.sendRumour(start_pid)
                 # IO.puts "Still working on this"
                 algorithm == "push-sum" ->
-                    IO.puts "Not implemented yet"
+                NetworkNode.startpushsum(start_pid)
         end
     end
 
@@ -60,7 +59,7 @@ defmodule NetworkManager do
                 end
 
             #IO.inspect neighbour_list
-            NetworkNode.populateNeighbours(cur_pid,neighbour_list)
+            NetworkNode.populateNeighbours(cur_pid,neighbour_list,algorithm)
             # IO.inspect NetworkNode.getNeighbours(cur_pid)
 
         ) end)
@@ -75,24 +74,35 @@ defmodule NetworkManager do
                 NetworkNode.sendRumour(start_pid)
                 # IO.puts "Still working on this"
             algorithm == "push-sum" ->
-                IO.puts "Not implemented yet"
+                NetworkNode.startpushsum(start_pid)
         end
     
     end
 
     def spawn_nodes_2d(numnodes, algorithm) do
-        numCols = :math.ceil(:math.sqrt(numnodes))
+        
         numRows = :math.ceil(:math.sqrt(numnodes))
         range = 1..round(numRows)
         outmap = Enum.reduce(range, %{}, fn(y, accout) -> (
             inmap = Enum.reduce(range, %{}, fn(x, accin) -> (
-                if algorithm == "push-sum" do
-                    
+                case algorithm do
+                    "push-sum" ->
+                        sval=(y-1)*numRows + x
+                        {:ok, pid} = NetworkNode.start({:pushsum,sval}, [])
+                        Map.put(accin, x, pid)
+                    "gossip" ->
+                        {:ok, pid} = NetworkNode.start({:gossip, 0}, [])
+                        Map.put(accin, x, pid)
                 end
-                if algorithm == "gossip" do
-                    {:ok, pid} = NetworkNode.start({:gossip, 0}, [])
-                    Map.put(accin, x, pid)
-                end
+                # if algorithm == "push-sum" do
+                #     sval=(y-1)*numRows + x
+                #     {:ok, pid} = NetworkNode.start({:pushsum,sval}, [])
+                #     Map.put(accin, x, pid)
+                # end
+                # if algorithm == "gossip" do
+                #     {:ok, pid} = NetworkNode.start({:gossip, 0}, [])
+                #     Map.put(accin, x, pid)
+                # end
             )end)
             Map.put(accout, y, inmap)
         )end)
@@ -140,10 +150,10 @@ defmodule NetworkManager do
                     range = 1..round(n)
                     r = Enum.random(range)
                     c = Enum.random(range)
-                    NetworkNode.populateNeighbours(cur_pid, neighbor_list ++ [node_map[r][c]])
+                    NetworkNode.populateNeighbours(cur_pid, neighbor_list ++ [node_map[r][c]],algorithm)
                 end
                 if (imperfect == false) do
-                    NetworkNode.populateNeighbours(cur_pid, neighbor_list)
+                    NetworkNode.populateNeighbours(cur_pid, neighbor_list,algorithm)
                 end
             )end)
         )end)
@@ -156,7 +166,7 @@ defmodule NetworkManager do
                 NetworkNode.sendRumour(start_pid)
                 # IO.puts "Still working on this"
                 algorithm == "push-sum" ->
-                    IO.puts "Not implemented yet"
+                NetworkNode.startpushsum(start_pid)
         end
     end
 
