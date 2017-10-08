@@ -42,6 +42,9 @@ defmodule Project2 do
     numNodes=String.to_integer(numNodes)
     #TODO: make network manager global so that nodes can report back for convergence....
 
+
+    {:ok,pid}=Agent.start(fn -> [] end, name: {:global, :mummy})
+
     cond do
       topology == "full" ->
         NetworkManager.initFull(numNodes, algorithm)

@@ -126,6 +126,7 @@ defmodule NetworkNode do
     
         if state_count < 1 do
             spawn(GossipAlgorithms, :gossip, [pid])
+            NetworkNode.informManager()
         end
         state_count=state_count+1
 
@@ -149,14 +150,16 @@ defmodule NetworkNode do
         #     spawn(GossipAlgorithms, :pushsum, [pid])
         # end
 
-        flag = cond do
-                flag == true ->
-                    flag = false
-                    spawn(GossipAlgorithms, :pushsum, [pid])
-                    flag
-                true ->
-                    flag
-            end 
+        # flag = cond do
+        #         flag == true ->
+        #             flag = false
+        #             spawn(GossipAlgorithms, :pushsum, [pid])
+        #             flag
+        #         true ->
+        #             flag
+        #     end 
+
+        
 
         #difference consecutive
 
@@ -170,7 +173,17 @@ defmodule NetworkNode do
                                 counter < 3 ->
                                         counter =counter+1
                                         if(counter ==3) do
-                                            NetworkNode.informManager()
+                                            IO.puts "Push-sum Converged at values:"
+                                            IO.inspect {s,w}
+                                            lst= Agent.get({:global, :mummy}, fn list -> list end)
+                                            start_time=hd(lst)
+                                            total_time=System.monotonic_time(:millisecond) - start_time
+                                            IO.puts "Total time: #{total_time}"
+                                            Agent.stop({:global, :mummy})
+                                            IO.puts "Shutting Down"
+                                            exit(:shutdown)
+
+                                            #NetworkNode.informManager()
                                         end
                                         counter
 
@@ -202,6 +215,14 @@ defmodule NetworkNode do
         #     end 
         # end 
 
+        # GossipAlgorithms.pushsum(pid)
+
+        {new_s,new_w}={new_s/2,new_w/2}
+        random_pid = Enum.random(state_list_neighbours)
+        #IO.inspect {new_s,new_w}
+        sendSWtuple(random_pid,{new_s,new_w})
+        #IO.puts "Sent value"
+        
         state_sw={new_s,new_w}
         {:noreply,{state_list_neighbours,state_sw,counter,flag}}
     end

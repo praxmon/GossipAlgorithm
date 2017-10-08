@@ -30,6 +30,9 @@ defmodule NetworkManager do
         Enum.each(node_list, fn(ele) -> (
             NetworkNode.populateNeighbours(ele, node_list,algorithm)
         )end)
+
+        Agent.update({:global, :mummy}, fn list -> [System.monotonic_time(:millisecond)|list] end)
+
         start_pid=Enum.random(node_list)
         cond do
             algorithm == "gossip" ->
@@ -66,6 +69,7 @@ defmodule NetworkManager do
 
         #populateNetworkList(nwmngr_pid,node_list)
 
+        Agent.update({:global, :mummy}, fn list -> [System.monotonic_time(:millisecond)|list] end)
         #fetch a random process from the list to start
         start_pid=Enum.random(node_list)
 
@@ -157,6 +161,8 @@ defmodule NetworkManager do
                 end
             )end)
         )end)
+
+        Agent.update({:global, :mummy}, fn list -> [System.monotonic_time(:millisecond)|list] end)
         range = 1..round(n)
         r = Enum.random(range)
         c = Enum.random(range)
@@ -205,12 +211,16 @@ defmodule NetworkManager do
 
     def handle_cast({:count}, {state_node_list, state_count, length}) do
         state_count = state_count + 1
-        if(state_count/length >= 0.9) do
-            IO.puts "Convergence of greater than 90%"
-            IO.puts "Initiating shutdown"
+        if(state_count/length >= 0.7) do
+            lst= Agent.get({:global, :mummy}, fn list -> list end)
+            start_time=hd(lst)
+            total_time=System.monotonic_time(:millisecond) - start_time
+            IO.puts "Total time: #{total_time}"
+            Agent.stop({:global, :mummy})
+            IO.puts "Complete"
             exit(:shutdown)
         end
-        if(state_count/length < 0.9) do
+        if(state_count/length < 0.7) do
             IO.puts "Current convergence " <> Float.to_string((state_count/length) *100) <>"%"
         end
         {:noreply, {state_node_list, state_count, length}}
